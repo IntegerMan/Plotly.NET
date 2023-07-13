@@ -217,6 +217,7 @@ module StyleParam =
         | Scene of int
         | Carpet of string
         | Smith of int
+        | Legend of int
 
         static member toString =
             function
@@ -265,8 +266,13 @@ module StyleParam =
                 if id < 2 then
                     "smith"
                 else
-                    sprintf "smith%i" id
+                    sprintf "smith%i" id            
             | Carpet id -> id
+            | Legend id ->
+                if id < 2 then
+                    "legend"
+                else
+                    sprintf "legend%i" id
 
         static member convert = SubPlotId.toString >> box
         override this.ToString() = this |> SubPlotId.toString

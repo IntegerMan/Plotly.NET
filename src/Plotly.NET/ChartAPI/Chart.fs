@@ -2500,11 +2500,10 @@ type Chart =
 
             ch |> Chart.withLayoutGrid grid)
 
-    /// <summary>
-    /// Sets the Legend for the chart's layout.
     /// </summary>
     /// <param name="legend">The new Legend for the chart's layout</param>
     /// <param name="Combine">Whether or not to combine the objects if there is already a Legend object set (default is false)</param>
+    [<Obsolete("this method is obsolete since the introduction of multiple legends per layout and will be removed in the next major release.")>]
     [<CompiledName("SetLegend")>]
     static member setLegend(legend: Legend, ?Combine: bool) =
         let combine = defaultArg Combine false
@@ -2521,9 +2520,41 @@ type Chart =
     /// If there is already a Legend set, the objects are combined.
     /// </summary>
     /// <param name="legend">The new Legend for the chart's layout</param>
+    [<Obsolete("this method is obsolete since the introduction of multiple legends per layout and will be removed in the next major release.")>]
     [<CompiledName("WithLegend")>]
     static member withLegend(legend: Legend) =
         (fun (ch: GenericChart) -> ch |> Chart.setLegend (legend, true))
+
+    /// <summary>
+    /// Sets the given Legend object with the given id on the input chart's layout.
+    /// </summary>
+    /// <param name="legend">The Legend object to set on the chart's layout</param>
+    /// <param name="id">The target Legend id with which the Legend object should be set.</param>
+    /// <param name="Combine">Whether or not to combine the objects if there is already an Legend set (default is false)</param>
+    [<CompiledName("SetLegend")>]
+    static member setLegend(legend: Legend, id: StyleParam.SubPlotId, [<Optional; DefaultParameterValue(null)>] ?Combine: bool) =
+
+        let combine = defaultArg Combine false
+
+        (fun (ch: GenericChart) ->
+            if combine then
+                ch |> GenericChart.mapLayout (Layout.updateLegendById (id, legend))
+            else
+                ch |> GenericChart.mapLayout (Layout.setLegend (id, legend)))
+
+    /// <summary>
+    /// Sets the Legend for the chart's layout
+    ///
+    /// If there is already a Legend set, the objects are combined.
+    /// </summary>
+    /// <param name="legend">The new Legend for the chart's layout</param>
+    /// <param name="Id">The target Legend id on which the Legend should be set. Default is 1.</param>
+    [<CompiledName("WithGeo")>]
+    static member withGeo(legend: Legend, [<Optional; DefaultParameterValue(null)>] ?Id: int) =
+        let id =
+            Id |> Option.defaultValue 1 |> StyleParam.SubPlotId.Legend
+
+        (fun (ch: GenericChart) -> ch |> Chart.setLegend (legend, id, true))
 
     /// <summary>
     /// Sets the given Legend styles on the input chart's Legend.
@@ -2661,6 +2692,7 @@ type Chart =
 
     // Set showLegend of a Chart
     [<CompiledName("WithLegend")>]
+    [<Obsolete("this method is obsolete since the introduction of multiple legends per layout and will be removed in the next major release.")>]
     static member withLegend(showlegend) =
         (fun (ch: GenericChart) ->
             let layout =

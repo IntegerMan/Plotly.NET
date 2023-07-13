@@ -612,11 +612,19 @@ module GenericChartExtensions =
 
         // Set the LayoutGrid options of a Chart
         [<CompiledName("WithLegend")>]
+        [<Extension>]
+        [<Obsolete("this method is obsolete since the introduction of multiple legends per layout and will be removed in the next major release.")>]
         member this.WithLegend(legend: Legend) =
             let layout =
                 GenericChart.getLayout this |> Layout.setLegend legend
 
             GenericChart.setLayout layout this
+
+        // Set the LayoutGrid options of a Chart
+        [<CompiledName("WithLegend")>]
+        [<Extension>]
+        member this.WithLegend(legend: Legend, [<Optional; DefaultParameterValue(null)>] ?Id: int) =
+            this |> Chart.withLegend (legend, ?Id = Id)
 
         /// Sets a map for the given chart (will only work with traces supporting geo, e.g. choropleth, scattergeo)
         [<CompiledName("WithMap")>]

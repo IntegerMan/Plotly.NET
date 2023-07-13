@@ -950,6 +950,7 @@ type Layout() =
     /// If there is no legend set, returns an empty Legend object.
     /// </summary>
     /// <param name="layout">The layout to get the legend from</param>
+    [<Obsolete("this method is obsolete since the introduction of multiple legends per layout and will be removed in the next major release.")>]
     static member getLegend(layout: Layout) =
         layout |> Layout.tryGetTypedMember<Legend> "legend" |> Option.defaultValue (Legend.init ())
 
@@ -957,6 +958,7 @@ type Layout() =
     /// Returns a function that sets the Legend object of the given trace.
     /// </summary>
     /// <param name="legend">The new Legend object</param>
+    [<Obsolete("this method is obsolete since the introduction of multiple legends per layout and will be removed in the next major release.")>]
     static member setLegend(legend: Legend) =
         (fun (layout: Layout) ->
             layout.SetValue("legend", legend)
@@ -966,9 +968,66 @@ type Layout() =
     /// Combines the given Legend object with the one already present on the layout.
     /// </summary>
     /// <param name="legend">The updated Legend object</param>
+    [<Obsolete("this method is obsolete since the introduction of multiple legends per layout and will be removed in the next major release.")>]
     static member updateLegend(legend: Legend) =
         (fun (layout: Layout) ->
             let combined =
                 (DynObj.combine (layout |> Layout.getLegend) legend) :?> Legend
 
             layout |> Layout.setLegend combined)
+
+    /// <summary>
+    /// Returns Some(Legend) if there is an axis object set on the layout with the given id, and None otherwise.
+    /// </summary>
+    /// <param name="id">The target legend id</param>
+    static member tryGetLegendById(id: StyleParam.SubPlotId) =
+        (fun (layout: Layout) -> layout.TryGetTypedValue<Legend>(StyleParam.SubPlotId.toString id))
+
+    /// <summary>
+    /// Combines the given legend object with the one already present on the layout.
+    /// </summary>
+    /// <param name="id">The target legend id</param>
+    /// <param name="legend">The updated legend object.</param>
+    static member updateLegendById(id: StyleParam.SubPlotId, legend: Legend) =
+        (fun (layout: Layout) ->
+
+            match id with
+            | StyleParam.SubPlotId.Legend _ ->
+
+                let legend' =
+                    match Layout.tryGetLegendById id layout with
+                    | Some a -> (DynObj.combine a legend) :?> Legend
+                    | None -> legend
+
+                legend' |> DynObj.setValue layout (StyleParam.SubPlotId.toString id)
+
+                layout
+            | _ ->
+                failwith
+                    $"{StyleParam.SubPlotId.toString id} is an invalid subplot id for setting a legend on layout")
+
+    /// <summary>
+    /// Returns the legend object of the layout with the given id.
+    ///
+    /// If there is no legend set, returns an empty Legend object.
+    /// </summary>
+    /// <param name="id">The target legend id</param>
+    static member getLegendById(id: StyleParam.SubPlotId) =
+        (fun (layout: Layout) -> layout |> Layout.tryGetLegendById id |> Option.defaultValue (Legend.init ()))
+
+    /// <summary>
+    /// Sets a legend object on the layout as a dynamic property with the given legend id.
+    /// </summary>
+    /// <param name="id">The legend id of the new legend</param>
+    /// <param name="legend">The legend to add to the layout.</param>
+    static member setLegend(id: StyleParam.SubPlotId, legend: Legend) =
+        (fun (layout: Layout) ->
+
+            match id with
+            | StyleParam.SubPlotId.Legend _ ->
+                legend |> DynObj.setValue layout (StyleParam.SubPlotId.toString id)
+                layout
+
+            | _ ->
+                failwith
+                    $"{StyleParam.SubPlotId.toString id} is an invalid subplot id for setting a legend on layout")
